@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:fd_match/fd_match.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:fd_generate/fd_generate.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:bow_match/bow_match.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:bow_generate/bow_generate.xcodeproj">
+   </FileRef>
+</Workspace>
