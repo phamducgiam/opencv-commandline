@@ -120,6 +120,8 @@ int main(int argc, char * const *argv)
     cv::vector<int> indexes;
     cv::vector<string> filenames;
     int k = 0;
+    KeyPoint keypoint;
+    keypoint.
     
     cout << "building..." << endl;
     

@@ -23,13 +23,14 @@
 using namespace std;
 using namespace cv;
 
-typedef enum {kLongOptionIndexNone, kLongOptionIndexDirectory, kLongOptionIndexDetector, kLongOptionIndexDetectorAdapter, kLongOptionIndexExtractor, kLongOptionIndexExtractorAdapter, kLongOptionIndexMatcher, kLongOptionIndexFeaturesOutput, kLongOptionIndexDescriptorsOutput} LongOptionIndex;
+typedef enum {kLongOptionIndexNone, kLongOptionIndexDirectory, kLongOptionIndexDetector, kLongOptionIndexDetectorAdapter, kLongOptionIndexExtractor, kLongOptionIndexExtractorAdapter, kLongOptionIndexMatcher, kLongOptionIndexFeaturesOutput, kLongOptionIndexDescriptorsOutput, kLongOptionIndexClusterNumber} LongOptionIndex;
 
 static const char* detectorAlgorithms[] = {"SURF","FAST","STAR","SIFT","ORB","BRISK","MSER","GFTT","HARRIS","Dense","SimpleBlob"};
 static const char* extractorAlgorithms[] = {"SURF","SIFT","BRIEF","BRISK","ORB","FREAK"};
 static const char* matchAlgorithms[] = {"FlannBased","BruteForce","BruteForce-L1","BruteForce-Hamming","BruteForce-Hamming(2)"};
 static const char* featuresOutputDefault = "features.yml";
 static const char* descriptorsOutputDefault = "descriptors.yml";
+static const int clusterNumberDefault = 1000;
 
 static const int BOW_TRAINER_RETRIES = 3;
 static const int BOW_TRAINER_FLAGS = KMEANS_PP_CENTERS;
@@ -43,6 +44,7 @@ int main(int argc, char * const *argv)
 {
     const char *directoryName, *detectorAlgorithm, *detectorAdapter, *extractorAlgorithm, *extractorAdapter, *matchAlgorithm, *featuresOutput, *descriptorsOutput;
     directoryName = detectorAlgorithm = detectorAdapter = extractorAlgorithm = extractorAdapter = matchAlgorithm = featuresOutput = descriptorsOutput = NULL;
+    int clusterNumber = 0;
     
     struct option longOptions[] = {
         {"directory", required_argument, 0, kLongOptionIndexDirectory},
@@ -53,6 +55,7 @@ int main(int argc, char * const *argv)
         {"matcher", required_argument, 0, kLongOptionIndexMatcher},
         {"features_output", required_argument, 0, kLongOptionIndexFeaturesOutput},
         {"descriptors_output", required_argument, 0, kLongOptionIndexDescriptorsOutput},
+        {"cluster_number", required_argument, 0, kLongOptionIndexClusterNumber},
         {0, 0, 0, 0}
     };
     
@@ -91,6 +94,10 @@ int main(int argc, char * const *argv)
                 descriptorsOutput = optarg;
                 break;
             }
+            case kLongOptionIndexClusterNumber: {
+                clusterNumber = atoi(optarg);
+                break;
+            }
             default:
                 break;
         }
@@ -123,6 +130,10 @@ int main(int argc, char * const *argv)
     if (!descriptorsOutput) {
         cout << "use " << descriptorsOutputDefault << " as output for descriptors" << endl;
         descriptorsOutput = descriptorsOutputDefault;
+    }
+    if (!clusterNumber) {
+        cout << "use " << clusterNumberDefault << " as cluster number" << endl;
+        clusterNumber = clusterNumberDefault;
     }
     
     DIR *dir;
@@ -177,7 +188,7 @@ int main(int argc, char * const *argv)
     
     cout << "cluster features...";
     
-    BOWKMeansTrainer bowTrainer = getBOWTrainer(vocabularySize);
+    BOWKMeansTrainer bowTrainer = getBOWTrainer(clusterNumber);
     Mat vocabulary = bowTrainer.cluster(features);
     
     cout << "\tdone" << endl;
@@ -224,6 +235,7 @@ int main(int argc, char * const *argv)
     
     cout << "write descriptors to file " << descriptorsOutput << "...";
     FileStorage fsDescriptors(descriptorsOutput, FileStorage::WRITE);
+    //fsDescriptors << "extractor" << bowExtractor;
     fsDescriptors << "descriptors" << bowDescriptors;
     fsDescriptors << "filenames" << filenames;
     cout << "\tdone" << endl;

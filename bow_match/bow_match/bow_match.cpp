@@ -172,6 +172,10 @@ int main(int argc, char * const *argv)
     Mat bowDescriptor;
     cv::vector<DMatch> matches;
     
+    int trueMatch = 0;
+    int totalFile = 0;
+    int notFound = 0;
+    
     cout << "Matching..." << endl;
     while ((ep = readdir(dir))) {
     	filename = ep->d_name;
@@ -184,6 +188,8 @@ int main(int argc, char * const *argv)
         if (S_ISREG(buf.st_mode)) {
         	image = imread(path, CV_LOAD_IMAGE_GRAYSCALE);
         	if (image.data) {
+                totalFile++;
+                
                 cout << "File " << filename << "..." << endl;
         		detector->detect(image, keypoints);
                 bowExtractor.compute(image, keypoints, bowDescriptor);
@@ -195,6 +201,10 @@ int main(int argc, char * const *argv)
                     if (j>=0 && j<filenames.size()) {
                         cout << "\tOriginal file " << filenames[j] << endl;
                     }
+                    
+                    if (filenames[j]==filename) {
+                        trueMatch++;
+                    }
                 }
                 cout << "done" << endl;
                 //break;
@@ -202,6 +212,9 @@ int main(int argc, char * const *argv)
         }
     }
     closedir(dir);
+    
+    cout.precision(2);
+    cout << "true match rate: " << 100.0 * trueMatch / totalFile << endl;
     
     return 0;
 }

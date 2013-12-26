@@ -155,6 +155,10 @@ int main(int argc, char * const *argv)
     cout << "\tdone" << endl;
     fsInput.release();
     
+    if(features.type()!=CV_32F) {
+        features.convertTo(features, CV_32F);
+    }
+    
     flann::KDTreeIndexParams indexParams(5);
     //flann::LshIndexParams indexParams(20, 15, 2);
     flann::Index kdtree(features, indexParams);
@@ -174,6 +178,7 @@ int main(int argc, char * const *argv)
     
     int trueMatch = 0;
     int totalFile = 0;
+    int notFound = 0;
     double t;
     
     cout << "matching..." << endl;
@@ -196,6 +201,10 @@ int main(int argc, char * const *argv)
                 cout << "File " << filename << "...";
         		detector->detect(image, keypoints);
         		extractor->compute(image, keypoints, descriptors);
+                
+                if(descriptors.type()!=CV_32F) {
+                    descriptors.convertTo(descriptors, CV_32F);
+                }
                 
                 kdtree.knnSearch(descriptors, indices, dists, 2, cv::flann::SearchParams(64));
                 
@@ -237,6 +246,7 @@ int main(int argc, char * const *argv)
                 }
                 else {
                     cout << "could find matched image";
+                    notFound++;
                 }
                 
                 cout << "...done" << endl;
@@ -250,6 +260,7 @@ int main(int argc, char * const *argv)
     
     cout.precision(2);
     cout << endl << "correct rate: " << (100.0 * trueMatch / totalFile) << endl;
+    cout << endl << "not found rate: " << (100.0 * notFound / totalFile) << endl;
     
     return 0;
 }
